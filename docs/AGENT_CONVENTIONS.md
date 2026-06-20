@@ -190,6 +190,31 @@ Operating rules:
   `reecosystem-core:docs/SKILL_SYSTEM_CONTRACT.md` — this section is its build-agent
   summary, not a replacement.
 
+### 7.1 Every mirror ships a two-tier drift guard (REQUIRED)
+
+A comment that says "mirror — do not diverge" is not enforcement; a hand-copied
+literal silently drifts the moment canonical bumps. So **every local mirror of a
+canonical value** (the version stamp, a mirrored enum, a source-of-truth number)
+**must ship two tests**, matching our local-vs-CI split:
+
+- **Tier 1 — local, offline, deterministic.** A unit test asserting the mirror
+  constant equals the canonical value the repo *consumes*. Source of canonical:
+  - if the repo consumes `reecosystem-core` as a **package/submodule** → import the
+    canonical artifact (e.g. `contracts/contract-version.json`) directly from there;
+  - else → **vendor a pinned copy** of the canonical artifact into the repo and
+    assert `mirror === vendored`. State which mechanism the repo uses.
+  This test is pure (no network) and **must live in the env-independent suite** so
+  the `stability-heartbeat` (§8) catches drift locally.
+- **Tier 2 — CI, networked.** A GitHub Actions job that checks the repo's
+  consumed/vendored copy against **live `reecosystem-core` main** (checkout, or
+  fetch raw `contracts/contract-version.json`). It **fails when upstream bumped and
+  this repo has not re-synced**. This is the durable guard; it belongs in CI where
+  network + secrets live, never in the local heartbeat.
+
+This is the standard for **all** future mirrored contracts, not just the version
+stamp. A mirror without both tiers is non-conforming. (Tier 2 requires
+`reecosystem-core` to be reachable — see the remote note in `ECOSYSTEM_MAP.md`.)
+
 ---
 
 ## 8. Loop / CI pattern (stability-heartbeat)
@@ -222,3 +247,33 @@ Each repo tunes the heartbeat's command to *its* pure suites; the doctrine is sh
       output (except a deliberate vendored `dist/`).
 - [ ] A `stability-heartbeat` command tuned to the repo's env-independent suites (§8).
 - [ ] reviewer body enforces the §7 cross-repo change protocol.
+- [ ] Every local contract mirror ships a Tier-1 equality test (env-independent) +
+      a Tier-2 upstream-sync CI job (§7.1).
+
+---
+
+## 10. Cross-repo agent routing (repo-qualified dispatch)
+
+Role names are **repo-local and intentionally duplicated** — every repo has its own
+`architect` / `reviewer` / etc. That keeps in-repo ergonomics simple (a developer in
+recontrol just says "reviewer"). But it means a **role name alone is ambiguous to the
+orchestrator**: "run the reviewer" could hit any of three repos.
+
+**Convention (chosen — low-churn): every cross-repo dispatch is repo-qualified.**
+The orchestrator never dispatches by bare role name. A dispatch must carry:
+1. the **target repo name**, and
+2. the agent's **absolute path** (e.g. `/Volumes/Lexar/recontrol/.claude/agents/reviewer.md`),
+   plus repo-absolute paths for any files the agent will touch.
+
+The **authoritative roster** of which roles exist in which repo (with absolute paths)
+lives in `ECOSYSTEM_MAP.md` §2. The orchestrator routes **from that map**, not from
+memory or guesswork. When a repo adds/renames/removes an agent, it updates the
+ECOSYSTEM_MAP roster in the same change.
+
+**Rationale for low-churn over hard namespacing.** The alternative — renaming every
+agent to `repo:role` (e.g. `recontrol:reviewer`) across all repos — was rejected: it
+churns every repo's `.claude/agents/` filenames and frontmatter, breaks the clean
+in-repo experience, and fights Claude Code's local agent-name model, all to solve an
+ambiguity that only exists at the orchestrator layer. Solve it where it occurs: at
+dispatch, with a real map. (If the ecosystem later adopts a shared agent registry
+that supports namespacing natively, revisit.)

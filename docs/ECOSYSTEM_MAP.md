@@ -26,23 +26,39 @@ rebuild (engine) → readvise + redeal-mobile (consumers).
 
 ---
 
-## 2. Agent surface per repo
+## 2. Agent surface per repo — AUTHORITATIVE ROUTING ROSTER
+
+> This table is the **authoritative roster** for cross-repo dispatch
+> (`AGENT_CONVENTIONS.md` §10). Role names are repo-local and duplicated, so the
+> orchestrator routes by **repo name + absolute agent path**, never by bare role
+> name. Keep this in sync whenever a repo adds/renames/removes an agent.
 
 Tools/model are standardized (`AGENT_CONVENTIONS.md` §2–§3): read-only roles =
 `Glob, Grep, Read[, WebFetch]`; writers = `+ Edit, Write, Bash`; all `model: opus`.
 
-| Repo | architect | feature-builder | reviewer | ui-engineer | migrator | mcp-engineer | Specialist notes |
-|------|:--:|:--:|:--:|:--:|:--:|:--:|------|
-| **readvise** | ✅ | ✅ | ✅ | ✅ | ✅ | — | Reference 5-agent set. |
-| **recontrol** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Adds **mcp-engineer** (owns the tool contract). |
-| **rebuild** | ✅ | ▲ `domain-engineer` | ✅ | ✅ | ✅ | — | Builder is the sanctioned alias **domain-engineer** (pure engine focus). |
-| **reecosystem-core** | — | — | — | — | — | — | Contracts/orchestration only; no build-agent team today (see §4). |
-| **redeal-mobile** | — | — | — | — | — | — | No team yet; MCP consumer (see §4). |
+| Repo | Agents dir (absolute) | architect | feature-builder | reviewer | ui-engineer | migrator | mcp-engineer | Specialist notes |
+|------|----------------------|:--:|:--:|:--:|:--:|:--:|:--:|------|
+| **readvise** | `/Volumes/Lexar/readvise/.claude/agents/` | ✅ | ✅ | ✅ | ✅ | ✅ | — | Reference 5-agent set. |
+| **recontrol** | `/Volumes/Lexar/recontrol/.claude/agents/` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | Adds **mcp-engineer** (owns the tool contract). |
+| **rebuild** | `/Volumes/Lexar/REbuild3/.claude/agents/` | ✅ | ▲ `domain-engineer` | ✅ | ✅ | ✅ | — | Builder is the sanctioned alias **domain-engineer** (pure engine focus). |
+| **reecosystem-core** | `/Volumes/Lexar/reecosystem-core/.claude/` (no `agents/`) | — | — | — | — | — | — | Contracts/orchestration only; no build-agent team today (see §4). |
+| **redeal-mobile** | — | — | — | — | — | — | — | No team yet; MCP consumer (see §4). |
 
 Legend: ✅ present · ▲ present under a sanctioned alias · — not present.
 
+**Dispatch example (repo-qualified):** to review a recontrol change, target
+`recontrol` + `/Volumes/Lexar/recontrol/.claude/agents/reviewer.md`, and pass
+repo-absolute paths for the files under review. Bare `reviewer` is ambiguous across
+the three teams and must not be used for cross-repo dispatch.
+
 **Stability heartbeat:** present in readvise, recontrol, rebuild — each tuned to
 that repo's env-independent suites (`AGENT_CONVENTIONS.md` §8).
+
+**Upstream reachability (Tier-2 dependency):** `reecosystem-core` has **no GitHub
+remote yet** (`CONTRACTS.md` notes this). The mirror Tier-2 CI jobs
+(`AGENT_CONVENTIONS.md` §7.1) target `github.com/nibblet/reecosystem-core@main` and
+will stay **red/blocked** until that remote exists and `contracts/contract-version.json`
+lands on its `main`. Tier-1 (vendored) is unaffected and green today.
 
 ---
 
