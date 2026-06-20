@@ -8,6 +8,7 @@
 - Multi-app architecture intent (`ARCHITECTURE.MD`) — bounded write ownership, canonical spines, RLS expectations
 - Shared schema/types/enums **when extracted here** (target state; not fully populated yet)
 - **The canonical horizontal contract** — `docs/SKILL_SYSTEM_CONTRACT.md`
+- **The contract version stamp** — `contracts/contract-version.json` (`ecosystemContractVersion`); downstream repos mirror this, never redefine
 - Phase 1 discovery inventory — `docs/SKILL_SYSTEM_CONTRACT_discovery.md`
 - **The build-agent standard** — `docs/AGENT_CONVENTIONS.md` (how every repo sets up `.claude/agents`, CLAUDE.md, hygiene, heartbeat, cross-repo protocol)
 - **Ecosystem routing map** — `docs/ECOSYSTEM_MAP.md` (who-owns-what + the agent surface per repo)
