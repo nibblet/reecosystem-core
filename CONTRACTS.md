@@ -19,7 +19,7 @@ Reference each as `repo:path` and full GitHub URL.
 
 | Doc | Location | GitHub |
 |-----|----------|--------|
-| Horizontal skill/MCP contract | `reecosystem-core:docs/SKILL_SYSTEM_CONTRACT.md` | https://github.com/nibblet/reecosystem-core/blob/main/docs/SKILL_SYSTEM_CONTRACT.md *(pending — no GitHub remote yet)* |
+| Horizontal skill/MCP contract | `reecosystem-core:docs/SKILL_SYSTEM_CONTRACT.md` | https://github.com/nibblet/reecosystem-core/blob/main/docs/SKILL_SYSTEM_CONTRACT.md *(live once merged to main)* |
 | Vertical architecture | `redeal-mobile:skills/ARCHITECTURE.md` | https://github.com/nibblet/redeal-mobile/blob/main/skills/ARCHITECTURE.md |
 | Multi-repo ownership brief | `redeal-mobile:docs/FORVEX_MULTI_REPO_REFACTOR_BRIEF.md` | https://github.com/nibblet/redeal-mobile/blob/main/docs/FORVEX_MULTI_REPO_REFACTOR_BRIEF.md |
 | Comps tool contract | `redeal-mobile:docs/comps_v2_contract.md` | https://github.com/nibblet/redeal-mobile/blob/main/docs/comps_v2_contract.md |

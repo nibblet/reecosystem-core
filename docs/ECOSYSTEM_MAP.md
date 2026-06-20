@@ -54,11 +54,12 @@ the three teams and must not be used for cross-repo dispatch.
 **Stability heartbeat:** present in readvise, recontrol, rebuild — each tuned to
 that repo's env-independent suites (`AGENT_CONVENTIONS.md` §8).
 
-**Upstream reachability (Tier-2 dependency):** `reecosystem-core` has **no GitHub
-remote yet** (`CONTRACTS.md` notes this). The mirror Tier-2 CI jobs
-(`AGENT_CONVENTIONS.md` §7.1) target `github.com/nibblet/reecosystem-core@main` and
-will stay **red/blocked** until that remote exists and `contracts/contract-version.json`
-lands on its `main`. Tier-1 (vendored) is unaffected and green today.
+**Upstream reachability (Tier-2 dependency):** the GitHub remote now exists —
+`github.com/nibblet/reecosystem-core`. The mirror Tier-2 CI jobs
+(`AGENT_CONVENTIONS.md` §7.1) fetch `raw.githubusercontent.com/nibblet/
+reecosystem-core/main/contracts/contract-version.json`. They go **green only once
+`contracts/contract-version.json` is on `main`** of that remote — the final unblock
+step. Tier-1 (vendored) is unaffected and green today.
 
 ---
 
