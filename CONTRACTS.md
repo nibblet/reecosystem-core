@@ -9,6 +9,8 @@
 - Shared schema/types/enums **when extracted here** (target state; not fully populated yet)
 - **The canonical horizontal contract** — `docs/SKILL_SYSTEM_CONTRACT.md`
 - Phase 1 discovery inventory — `docs/SKILL_SYSTEM_CONTRACT_discovery.md`
+- **The build-agent standard** — `docs/AGENT_CONVENTIONS.md` (how every repo sets up `.claude/agents`, CLAUDE.md, hygiene, heartbeat, cross-repo protocol)
+- **Ecosystem routing map** — `docs/ECOSYSTEM_MAP.md` (who-owns-what + the agent surface per repo)
 
 ## Canonical cross-repo docs (read before changing shared behavior)
 
