@@ -8,6 +8,7 @@
 - Multi-app architecture intent (`ARCHITECTURE.MD`) — bounded write ownership, canonical spines, RLS expectations
 - Shared schema/types/enums **when extracted here** (target state; not fully populated yet)
 - **The canonical horizontal contract** — `docs/SKILL_SYSTEM_CONTRACT.md`
+- **The contract version stamp** — `contracts/contract-version.json` (`ecosystemContractVersion`); downstream repos mirror this, never redefine
 - Phase 1 discovery inventory — `docs/SKILL_SYSTEM_CONTRACT_discovery.md`
 
 ## Canonical cross-repo docs (read before changing shared behavior)
