@@ -1,5 +1,5 @@
 {
-  "ecosystemContractVersion": "1.0.0",
+  "ecosystemContractVersion": "1.1.0",
   "canonicalSource": "reecosystem-core/docs/SKILL_SYSTEM_CONTRACT.md",
   "description": "Canonical version stamp of the forVEX horizontal skill + MCP interaction contract. This is the single source of truth. Downstream repos MIRROR this value (reference it and keep it in sync); they MUST NOT redefine it locally or let a local copy diverge. See reecosystem-core/docs/AGENT_CONVENTIONS.md (cross-repo change protocol).",
   "additive": true,
