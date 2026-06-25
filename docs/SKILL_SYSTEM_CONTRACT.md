@@ -1,7 +1,7 @@
 # REcosystem Skill + MCP Interaction Contract
 
 **Status:** Canonical horizontal contract  
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Governs:** Cross-skill identity, source-of-truth, enums, MCP topology, write discipline, routing, and change protocol  
 **Does not govern:** Vertical skill workflows (`redeal-mobile/skills/ARCHITECTURE.md`), per-tool wire schemas (`redeal-mobile/docs/comps_v2_contract.md`), or underwriting math internals
 
@@ -103,6 +103,7 @@ core.deal_links(
 | Underwriting confidence | `forvex_underwrite` (`confidence`) | one-pager | `UnderwriteSummarySchema` — **distinct from comps confidence** |
 | Market briefing | `forvex_get_market_intelligence` | appointment-prep narrative | `recontrol/lib/mcp/market/` |
 | Saved analysis snapshot | `forvex_save_deal` → `core.deal_analyses` | `forvex_get_deal`, Readvise UI | `recontrol/lib/mcp/deals/saveDeal.ts` |
+| Cross-lane event ledger | Cowork lanes via the emit tool (planned) → `core.lane_events` | Readvise reasoning layer (proposes only) | `recontrol/supabase/migrations/20260625130000_core_lane_events.sql`; `recontrol/docs/EVENT_LEDGER_STEP1_BRIEF.md` |
 
 **Offline fallback:** `redeal-mobile/skills/forvex-underwriting/scripts/underwrite.py` may run only when MCP is unreachable. It is **not** a second producer when connected.
 
@@ -153,6 +154,20 @@ Each enum is listed by **name only**. Values and rates live at the pointer.
 **Pointer:** `recontrol/lib/mcp/deals/dealWritebackTypes.ts` → `DEAL_LIFECYCLE_STATUSES`
 
 Used by: `forvex_update_deal_disposition`, `forvex_save_deal` (initial status only)
+
+### 3.5 Lane event taxonomy (cross-lane ledger)
+
+Two **frozen** enums on `core.lane_events`; the `lane` and `verb` columns are deliberately
+**not** enums (text, validated at the emit-tool boundary so a new lane/verb needs no migration).
+
+| Field | Values | Authority |
+|-------|--------|-----------|
+| `entity_type` | `property`, `deal` (canonical-spine entities only; new types added when their spine exists) | `recontrol/supabase/migrations/20260625130000_core_lane_events.sql` (CHECK) |
+| `status` | `proposed`, `confirmed`, `actioned`, `dismissed` (default `proposed` — human-in-the-loop gate) | Same |
+
+**Emit rule (identity discipline):** a lane MUST resolve to a canonical `property_id` / `deal_id`
+via `forvex_get_property` before emitting; a free-text address is **never** an entity key on the
+ledger. The FK columns enforce this structurally (see §1.2 resolution rules).
 
 ---
 
