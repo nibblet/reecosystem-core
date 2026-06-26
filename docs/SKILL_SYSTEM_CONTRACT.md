@@ -385,9 +385,11 @@ contract bump (§8.3); adding/removing a tool from the platform registry follows
 CRG marketing skills (`crg-post-*`, `content-coach`, `brand-brief`, `post-grader`) are a **different
 brand/product** and must **not** live in `forvex-skills`. They currently have **no canonical source**
 (only loose files under `redeal-mobile/skills/build/`, which is stale and should be retired). They
-need their own skills home mirroring the forvex-skills layout (a `crg-skills` repo, or
-`cobbresourcegroup/skills/`). Until that home exists, treat them as unhomed; do not add them to the
-forVEX registry. **Open decision.**
+would need their own skills home mirroring the forvex-skills layout (a `crg-skills` repo, or
+`cobbresourcegroup/skills/`). **Decision (2026-06-26): intentionally left stranded for now** — no
+CRG skills home is being stood up yet; the loose files under `redeal-mobile/skills/build/` remain
+local-only. Do not add them to the forVEX registry. Revisit if/when CRG warrants its own skills
+pipeline.
 
 ---
 
