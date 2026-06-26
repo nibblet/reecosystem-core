@@ -2,8 +2,8 @@
 
 **Status:** Canonical horizontal contract  
 **Version:** 1.1.0  
-**Governs:** Cross-skill identity, source-of-truth, enums, MCP topology, write discipline, routing, and change protocol  
-**Does not govern:** Vertical skill workflows (`redeal-mobile/skills/ARCHITECTURE.md`), per-tool wire schemas (`redeal-mobile/docs/comps_v2_contract.md`), or underwriting math internals
+**Governs:** Cross-skill identity, source-of-truth, enums, MCP topology, **skill storage & distribution (§9)**, write discipline, routing, and change protocol  
+**Does not govern:** A skill's *internal* workflow prose (`forvex-skills/skills/<name>/SKILL.md`), per-tool wire schemas (`redeal-mobile/docs/comps_v2_contract.md`), or underwriting math internals
 
 ---
 
@@ -185,7 +185,10 @@ ledger. The FK columns enforce this structurally (see §1.2 resolution rules).
 | Readvise capture tools | Same server (`readvise_*` prefix) — not a separate MCP |
 | Rehab tools (planned) | Same server — **not** a separate MCP |
 
-**Tool inventory:** See discovery doc §3 or `registry.ts`. Count: 23 registered tools today.
+**Tool inventory:** `registry.ts` is the source of truth (mirrored for skills in
+`forvex-skills/platform/mcp-tools.registry.json`, lint-enforced). ~26 tools at `TOOL_SCHEMA_VERSION` 0.4.0.
+
+**Skill source & distribution:** all skills are sourced + packaged from the **`forvex-skills`** repo — see **§9**.
 
 **Resources (presentation):** `forvex://deal/{deal_id}/analysis` etc. — planned; not in registry yet (`forvex-presentation/SKILL.md`).
 
@@ -340,12 +343,62 @@ flowchart LR
 
 ---
 
+## 9. Skill storage & distribution
+
+**Canonical home — one skills repo, like the one MCP connector (§1.5).** All forVEX skills are
+sourced and packaged from **`forvex-skills`** (`github.com/reecosys/forvex-skills`). Do **not**
+scatter skill sources into app repos (readvise, recontrol, redeal-mobile). A skill that touches
+readvise data or the MCP still lives in `forvex-skills`, not next to the code it calls.
+
+**Layout:**
+
+| Path | Role |
+|------|------|
+| `skills/<name>/SKILL.md` | The skill — frontmatter (`name`, `description`) + contract banner + body |
+| `skills/<name>/tier.txt` | `demo` or `mcp` |
+| `skills/<name>/references/*.md` | Skill-specific references (e.g. `data-sources.md`) |
+| `skills/SKILL_REGISTRY.json` | **Manifest** — bundles (by lane) + per-skill `{lane, tier, writes, reads, handoffs, platform_refs}`; `mcp_min_version` floor |
+| `platform/references/*` | Shared docs **vendored into every `.skill` at package time** (the "thin skill, point to canon" rule, build-enforced) |
+| `platform/mcp-tools.registry.json` | The tool surface skills may use; mirrors recontrol `registry.ts`. **`scripts/lint-skills.py` fails if a skill references a tool not listed here** — the skill-side analog of the no-enum-fork guard |
+
+**Build & distribution:** `./package.sh [skill]` → `build/<name>.skill` (`build/` is release-only,
+gitignored). `scripts/build-manifest.sh <version>` stamps a release. Distribution: GitHub release +
+the gated `forvex.app/install` page, grouped by lane.
+
+**Versioning:** `mcp_min_version` (SKILL_REGISTRY) pins the minimum MCP `TOOL_SCHEMA_VERSION` the set
+needs — bump it when a skill adopts a newly-added tool. Per-skill `SKILL.md` edits do not need a
+contract bump (§8.3); adding/removing a tool from the platform registry follows §8.
+
+### 9.1 Skill taxonomy
+
+| Kind | Home | Examples | Distribution |
+|------|------|----------|--------------|
+| **Demo** | forvex-skills (`tier=demo`) | forvex-mao, forvex-rehab-light | uploadable, no account |
+| **MCP vertical** | forvex-skills (`tier=mcp`) | forvex-underwriting, appointment-prep | uploadable + Control MCP |
+| **Capture / reflect** | forvex-skills (`readvise` bundle) | readvise-capture, weekly-accountability | uploadable + Control MCP |
+| **Cowork lane** | forvex-skills (`cowork` bundle) | cmo-lane | lane references the skill; emits via MCP |
+| **In-app advisor personas** | `readvise/lib/prompts/*.md` + `agents.config.json` | business / negotiation / franchise advisor | app-internal — **NOT** a forvex-skill; **sunsetting** as Big Bet 3 moves conversation to Claude chat + skills |
+| **CRG-brand skills** | separate brand home (see §9.2) | crg-post-writer, content-coach | distinct product — not forVEX |
+
+### 9.2 Non-forVEX (CRG) skills
+
+CRG marketing skills (`crg-post-*`, `content-coach`, `brand-brief`, `post-grader`) are a **different
+brand/product** and must **not** live in `forvex-skills`. They currently have **no canonical source**
+(only loose files under `redeal-mobile/skills/build/`, which is stale and should be retired). They
+need their own skills home mirroring the forvex-skills layout (a `crg-skills` repo, or
+`cobbresourcegroup/skills/`). Until that home exists, treat them as unhomed; do not add them to the
+forVEX registry. **Open decision.**
+
+---
+
 ## Related documents
 
 | Document | Relationship |
 |----------|--------------|
 | `reecosystem-core/docs/SKILL_SYSTEM_CONTRACT_discovery.md` | Phase 1 inventory + gap analysis |
-| `redeal-mobile/skills/ARCHITECTURE.md` | Vertical stack (UI → skill → MCP → Readvise) |
+| `forvex-skills/` (repo) | **Canonical skill source + packaging + distribution (§9)** |
+| `forvex-skills/skills/SKILL_REGISTRY.json` | Skill manifest — bundles + per-skill tool wiring |
+| `redeal-mobile/skills/ARCHITECTURE.md` | Legacy vertical-stack notes (skill **source** moved to `forvex-skills`) |
 | `redeal-mobile/docs/comps_v2_contract.md` | Comps vertical wire contract |
 | `redeal-mobile/docs/FORVEX_MULTI_REPO_REFACTOR_BRIEF.md` | Refactor campaign plan |
 | `recontrol/docs/MCP_REBUILD_HANDOFF.md` | MCP transport, auth, REbuild handoff |
