@@ -104,6 +104,8 @@ core.deal_links(
 | Market briefing | `forvex_get_market_intelligence` | appointment-prep narrative | `recontrol/lib/mcp/market/` |
 | Saved analysis snapshot | `forvex_save_deal` → `core.deal_analyses` | `forvex_get_deal`, Readvise UI | `recontrol/lib/mcp/deals/saveDeal.ts` |
 | Cross-lane event ledger | Cowork lanes via the emit tool (planned) → `core.lane_events` | Readvise reasoning layer (proposes only) | `recontrol/supabase/migrations/20260625130000_core_lane_events.sql`; `recontrol/docs/EVENT_LEDGER_STEP1_BRIEF.md` |
+| State legality + operational nuance | `core.state_rules` (global reference table) → read by loaders in recontrol; surfaced on `forvex_underwrite` `server_context.state_rules` | comp deed filter (SW arms-length), comp confidence (non-disclosure penalty), Readvise Stage-0 legal gate, underwriting advisor "State nuances" brief | `recontrol/lib/mcp/underwrite/stateRulesBrief.ts`; `recontrol/supabase/migrations/20260703120000_core_state_rules.sql`; `recontrol/docs/state-rules-extension-plan.md` |
+| ChatARV comps (external cross-check) | `forvex_get_chatarv_comps` (read cached / opt-in refresh) → `chatarv-run-comps` edge fn → `core.chatarv_comp_reports` | underwriting ARV cross-check (esp. non-disclosure states), engine-drift tracking | `recontrol/lib/mcp/tools/get_chatarv_comps.ts`; `recontrol/supabase/functions/chatarv-run-comps/index.ts` |
 
 **Offline fallback:** `redeal-mobile/skills/forvex-underwriting/scripts/underwrite.py` may run only when MCP is unreachable. It is **not** a second producer when connected.
 
@@ -168,6 +170,23 @@ Two **frozen** enums on `core.lane_events`; the `lane` and `verb` columns are de
 **Emit rule (identity discipline):** a lane MUST resolve to a canonical `property_id` / `deal_id`
 via `forvex_get_property` before emitting; a free-text address is **never** an entity key on the
 ledger. The FK columns enforce this structurally (see §1.2 resolution rules).
+
+### 3.6 State-rules operational fields (`core.state_rules`)
+
+Per-state legality + operational nuance, a global reference table (char(2) PK, read-by-all).
+The one true enum is `closing_authority`; the rest are booleans/scalars listed for discoverability.
+
+| Field | Values / type | Authority |
+|-------|---------------|-----------|
+| `closing_authority` | `attorney`, `attorney_customary`, `attorney_partial`, `title` | **Const/type:** `recontrol/lib/mcp/underwrite/stateRulesBrief.ts` → `CLOSING_AUTHORITY` / `ClosingAuthority`. **DB:** `core.state_rules.closing_authority` CHECK. |
+| `special_warranty_arms_length` | boolean (states where SW is a normal arm's-length resale deed; default-deny, counsel-confirmed) | `recontrol/supabase/migrations/20260703120000_core_state_rules.sql`; consumed by `recontrol/lib/mcp/comps/trace/transactionQuality.ts` |
+| `non_disclosure` | boolean (public-record sale prices unreliable) | Same migration; consumed by comp confidence (`recontrol/lib/mcp/comps/compIntelligence.ts`) |
+| `comp_confidence_penalty` | numeric fraction (e.g. `0.05`) — confidence −pts + ARV band widening in non-disclosure states | Same |
+| `severity` | `GREEN` / `AMBER` / `RED` (wholesale/assignment legality) | Same migration (seeded from `readvise.state_wholesale_rules`) |
+
+**Mirror rule (per CONTRACTS §3):** `closing_authority` is defined **once in recontrol**; do not
+redefine the enum locally in other repos — reference `CLOSING_AUTHORITY` (or the DB CHECK) directly.
+No shared package exists yet, so there is nothing to sync here beyond this pointer.
 
 ---
 
