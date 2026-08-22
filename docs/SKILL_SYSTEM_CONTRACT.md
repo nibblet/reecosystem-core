@@ -205,7 +205,7 @@ No shared package exists yet, so there is nothing to sync here beyond this point
 | Rehab tools (planned) | Same server — **not** a separate MCP |
 
 **Tool inventory:** `registry.ts` is the source of truth (mirrored for skills in
-`forvex-skills/platform/mcp-tools.registry.json`, lint-enforced). ~26 tools at `TOOL_SCHEMA_VERSION` 0.4.0.
+`forvex-skills/platform/mcp-tools.registry.json`, lint-enforced). ~26 tools at `TOOL_SCHEMA_VERSION` 0.6.0.
 
 **Skill source & distribution:** all skills are sourced + packaged from the **`forvex-skills`** repo — see **§9**.
 
