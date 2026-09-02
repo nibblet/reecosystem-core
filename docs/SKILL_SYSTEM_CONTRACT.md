@@ -164,12 +164,16 @@ Two **frozen** enums on `core.lane_events`; the `lane` and `verb` columns are de
 
 | Field | Values | Authority |
 |-------|--------|-----------|
-| `entity_type` | `property`, `deal` (canonical-spine entities only; new types added when their spine exists) | `recontrol/supabase/migrations/20260625130000_core_lane_events.sql` (CHECK) |
+| `entity_type` | `property`, `deal`, `workspace` (canonical-spine entities only; new types added when their spine exists). `workspace` joins on the row's existing `workspace_id` FK — both `property_id` and `deal_id` MUST be null. | `recontrol/supabase/migrations/20260625130000_core_lane_events.sql` + `20260902120000_core_lane_events_workspace.sql` (CHECK) |
 | `status` | `proposed`, `confirmed`, `actioned`, `dismissed` (default `proposed` — human-in-the-loop gate) | Same |
 
-**Emit rule (identity discipline):** a lane MUST resolve to a canonical `property_id` / `deal_id`
-via `forvex_get_property` before emitting; a free-text address is **never** an entity key on the
-ledger. The FK columns enforce this structurally (see §1.2 resolution rules).
+**Emit rule (identity discipline):**
+- `property` / `deal` events MUST resolve to a canonical `property_id` / `deal_id` via
+  `forvex_get_property` before emitting; a free-text address is **never** an entity key on the
+  ledger. The FK columns enforce this structurally (see §1.2 resolution rules).
+- `workspace` events MUST NOT pass `property_id`, `deal_id`, or `address`. Identity is the
+  MCP-context `workspace_id` already on the row. Use this for routines and brand/ops work that
+  has no property or deal (social audit, newsletter, BNI chapter watch, PM portfolio rollup).
 
 ### 3.6 State-rules operational fields (`core.state_rules`)
 
@@ -205,11 +209,12 @@ No shared package exists yet, so there is nothing to sync here beyond this point
 | Rehab tools (planned) | Same server — **not** a separate MCP |
 
 **Tool inventory:** `registry.ts` is the source of truth (mirrored for skills in
-`forvex-skills/platform/mcp-tools.registry.json`, lint-enforced). ~26 tools at `TOOL_SCHEMA_VERSION` 0.6.0.
+`forvex-skills/platform/mcp-tools.registry.json`, lint-enforced). See that file
+for the live list. `TOOL_SCHEMA_VERSION` 0.7.0 is additive (`forvex_render_presentation`).
 
 **Skill source & distribution:** all skills are sourced + packaged from the **`forvex-skills`** repo — see **§9**.
 
-**Resources (presentation):** `forvex://deal/{deal_id}/analysis` etc. — planned; not in registry yet (`forvex-presentation/SKILL.md`).
+**Resources (presentation):** `forvex://deal/{deal_id}/analysis` remains a data handle. Operator HTML is produced by **`forvex_render_presentation`** (schema 0.7.0) — not by filling templates on-device.
 
 ---
 
