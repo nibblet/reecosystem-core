@@ -190,7 +190,7 @@ All tools registered in `recontrol/lib/mcp/tools/registry.ts:36-61`. Implementat
 
 | Location | Values | Issue |
 |----------|--------|-------|
-| `dealWritebackTypes.ts:9-18` | LEAD, OFFER, UNDER_CONTRACT, … LOST | Used by write tools |
+| `dealWritebackTypes.ts:9-19` | LEAD, OFFER, UNDER_CONTRACT, … FOLLOW_UP, LOST | Used by write tools |
 | `constants.ts:9-18` | Lead, Offer, Under Contract, Contract, … | Title Case + extra `Contract` — **unused by write tools** |
 
 ---

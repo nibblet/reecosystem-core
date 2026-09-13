@@ -155,6 +155,8 @@ Each enum is listed by **name only**. Values and rates live at the pointer.
 
 **Pointer:** `recontrol/lib/mcp/deals/dealWritebackTypes.ts` → `DEAL_LIFECYCLE_STATUSES`
 
+Values: `LEAD | OFFER | UNDER_CONTRACT | INVENTORY | REHAB | LISTED | PENDING | SOLD | FOLLOW_UP | LOST`. `FOLLOW_UP` is a paused exit (same deal, required follow-up reason); `LOST` is terminal (required lost reason). Sequential happy path is unchanged.
+
 Used by: `forvex_update_deal_disposition`, `forvex_save_deal` (initial status only)
 
 ### 3.5 Lane event taxonomy (cross-lane ledger)
