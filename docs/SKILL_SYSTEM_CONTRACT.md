@@ -323,6 +323,7 @@ flowchart LR
 | `readvise-capture` | "note that", "add a task", "pulse:", "advisor lane:", `quick:` | `readvise_*` |
 | `cfo-lane` | KPI / cash / payables / rental capital map | `forvex_emit_event`, `readvise_upsert_rental_debt` |
 | `pm-lane` | COO weekly reconcile — flips + Holdings rentals / CapEx / ops | `forvex_emit_event`, `readvise_upsert_property_capex`, `readvise_upsert_rental_ops` |
+| `cos-lane` | CoS triage/dispatch + accountability + company brief | `forvex_emit_event` (`cos`), `readvise_create_accountability_debrief` |
 | `forvex-presentation` | "dashboard", "deck", "PDF" | none |
 
 ### 7.2 Disambiguation order
