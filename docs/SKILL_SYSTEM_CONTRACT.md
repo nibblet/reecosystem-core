@@ -104,6 +104,7 @@ core.deal_links(
 | Market briefing | `forvex_get_market_intelligence` | appointment-prep narrative | `recontrol/lib/mcp/market/` |
 | Saved analysis snapshot | `forvex_save_deal` → `core.deal_analyses` | `forvex_get_deal`, Readvise UI | `recontrol/lib/mcp/deals/saveDeal.ts` |
 | Cross-lane event ledger | Cowork lanes via the emit tool (planned) → `core.lane_events` | Readvise reasoning layer (proposes only) | `recontrol/supabase/migrations/20260625130000_core_lane_events.sql`; `recontrol/docs/EVENT_LEDGER_STEP1_BRIEF.md` |
+| Holdings rental capital (loan↔property) | `readvise_list_rental_debt` / `readvise_upsert_rental_debt` | cfo-lane; Readvise Operate rental debt tab | `readvise.rental_debt_accounts` + `rental_debt_collateral` + `rental_debt_snapshots` |
 | State legality + operational nuance | `core.state_rules` (global reference table) → read by loaders in recontrol; surfaced on `forvex_underwrite` `server_context.state_rules` | comp deed filter (SW arms-length), comp confidence (non-disclosure penalty), Readvise Stage-0 legal gate, underwriting advisor "State nuances" brief | `recontrol/lib/mcp/underwrite/stateRulesBrief.ts`; `recontrol/supabase/migrations/20260703120000_core_state_rules.sql`; `recontrol/docs/state-rules-extension-plan.md` |
 | ChatARV comps (external cross-check) | `forvex_get_chatarv_comps` (read cached / opt-in refresh) → `chatarv-run-comps` edge fn → `core.chatarv_comp_reports` | underwriting ARV cross-check (esp. non-disclosure states), engine-drift tracking | `recontrol/lib/mcp/tools/get_chatarv_comps.ts`; `recontrol/supabase/functions/chatarv-run-comps/index.ts` |
 
@@ -296,6 +297,7 @@ flowchart LR
 | Franchisee prefs | `forvex_save_buy_box` | `core.franchisee_prefs` | `forvex_get_buy_box` read |
 | Activity / walkaway notes | `forvex_log_activity` | `readvise.readvise_property_notes` | Append-only |
 | Pulse / tasks / advisor | `readvise_create_*`, `readvise_append_pulse_today` | `readvise.*` | Independent of deal analysis |
+| Holdings rental capital | `readvise_upsert_rental_debt` | `readvise.rental_debt_accounts` / `rental_debt_collateral` / `rental_debt_snapshots` | Snapshots append by as_of_date; collateral replace is explicit |
 | Rehab estimate (planned) | `save_rehab_estimate` | `redeal.deals.*_rehab_estimate` (projected) | Must coordinate with analysis.rehab on save — server merges |
 | Comp trace | `forvex_get_comps` (side effect) | `core.comp_traces` | Read via `forvex_get_comp_detail` |
 | Research attachments | `forvex_attach_analysis` | `core.property_research` | Deduped by hash |
@@ -319,6 +321,7 @@ flowchart LR
 | `forvex-appointment-prep` | "prep me", "meeting at", "appointment brief" | disposition, activity |
 | `forvex-rehab-estimator` | "estimate rehab", walkthrough, component mode | `save_rehab_estimate` (planned) |
 | `readvise-capture` | "note that", "add a task", "pulse:", "advisor lane:", `quick:` | `readvise_*` |
+| `cfo-lane` | KPI / cash / payables / rental capital map | `forvex_emit_event`, `readvise_upsert_rental_debt` |
 | `forvex-presentation` | "dashboard", "deck", "PDF" | none |
 
 ### 7.2 Disambiguation order
