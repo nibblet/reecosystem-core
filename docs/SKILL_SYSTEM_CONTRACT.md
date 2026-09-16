@@ -298,6 +298,7 @@ flowchart LR
 | Activity / walkaway notes | `forvex_log_activity` | `readvise.readvise_property_notes` | Append-only |
 | Pulse / tasks / advisor | `readvise_create_*`, `readvise_append_pulse_today` | `readvise.*` | Independent of deal analysis |
 | Holdings rental capital | `readvise_upsert_rental_debt` | `readvise.rental_debt_accounts` / `rental_debt_collateral` / `rental_debt_snapshots` | Snapshots append by as_of_date; collateral replace is explicit |
+| CMO social snapshot | `readvise_upsert_cmo_snapshot` | `readvise.cmo_snapshots` | Latest-wins per workspace; echo with `readvise_get_cmo_snapshot`. Not a lane event. |
 | Rehab estimate (planned) | `save_rehab_estimate` | `redeal.deals.*_rehab_estimate` (projected) | Must coordinate with analysis.rehab on save — server merges |
 | Comp trace | `forvex_get_comps` (side effect) | `core.comp_traces` | Read via `forvex_get_comp_detail` |
 | Research attachments | `forvex_attach_analysis` | `core.property_research` | Deduped by hash |
@@ -322,6 +323,7 @@ flowchart LR
 | `forvex-rehab-estimator` | "estimate rehab", walkthrough, component mode | `save_rehab_estimate` (planned) |
 | `readvise-capture` | "note that", "add a task", "pulse:", "advisor lane:", `quick:` | `readvise_*` |
 | `cfo-lane` | KPI / cash / payables / rental capital map | `forvex_emit_event`, `readvise_upsert_rental_debt` |
+| `cmo-lane` | Social / newsletter / listing marketing | `forvex_emit_event`, `readvise_upsert_cmo_snapshot` |
 | `pm-lane` | COO weekly reconcile — flips + Holdings rentals / CapEx / ops | `forvex_emit_event`, `readvise_upsert_property_capex`, `readvise_upsert_rental_ops` |
 | `cos-lane` | CoS triage/dispatch + accountability + company brief | `forvex_emit_event` (`cos`), `readvise_create_accountability_debrief` |
 | `forvex-presentation` | "dashboard", "deck", "PDF" | none |
