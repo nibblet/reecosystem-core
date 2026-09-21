@@ -195,6 +195,41 @@ The one true enum is `closing_authority`; the rest are booleans/scalars listed f
 redefine the enum locally in other repos — reference `CLOSING_AUTHORITY` (or the DB CHECK) directly.
 No shared package exists yet, so there is nothing to sync here beyond this pointer.
 
+### 3.7 Memory layer (documents, recall, agent autonomy)
+
+The forVEX memory layer — scanned paper, the retrievable corpus, and the rules governing what an
+agent may do with work it finds there. Design: `recontrol/docs/FORVEX_MEMORY_ARCHITECTURE.md`.
+
+These enums shipped as **local declarations in two repos** during phases 1–2 and are centralized
+here before the Phase 3 corpus multiplies the consumers. Same rule as §3.6: defined once, mirrored
+by pointer, never redefined to diverge.
+
+| Enum | Wire values | Authority |
+|------|-------------|-----------|
+| `Authority` | `authoritative`, `derived`, `asserted` | `recontrol/lib/mcp/memory/contracts.ts` → `AUTHORITY_TIERS` |
+| `DocClass` | `contract`, `settlement_statement`, `deed`, `title_commitment`, `rent_roll`, `financial_statement`, `policy`, `process_doc`, `playbook`, `correspondence`, `other` | Same → `DOC_CLASSES` |
+| `DocLifecycle` | `draft`, `executed`, `final`, `superseded` | Same → `DOC_LIFECYCLES` |
+| `CaptureMethod` | `ocr`, `drive`, `conversation`, `human`, `import` | Same → `CAPTURE_METHODS` |
+| `RecallSource` | `document`, `corpus`, `readvise`, `ledger` | `recontrol/lib/mcp/recall/types.ts` → `RECALL_SOURCES` |
+| `Autonomy` | `MANUAL`, `ASSISTED`, `AUTO` | `recontrol/lib/mcp/readvise/taskDisposition.ts` ↔ `readvise/lib/operate/taskDisposition.ts` |
+| `Disposition` | `propose`, `commit` | Same pair |
+
+**Authority tiers are a ranking, not a label.** `authoritative` is recorded or executed paper;
+`derived` is engine or system output; `asserted` is what somebody said. A consumer must never
+weigh an asserted figure equally against an authoritative one — a conversational "rent is $1,450"
+is not a rent-roll line. `forvex_remember` (Phase 4) writes `asserted` only.
+
+**Mirror rule.** `Autonomy` and `Disposition` live in a predicate that exists **byte-identically**
+in recontrol and readvise, with each repo asserting the same sha256 of its copy
+(`taskDisposition.mirror.test.ts`). Changing it means copying the file across and updating both
+checksums in one landing. This is the stopgap until a shared package exists; the checksum is what
+kept it from repeating the `isOpenTask` drift.
+
+**Anchor rule (reads as well as writes).** §3.5's "a free-text address is never an entity key"
+applies to memory too. A document anchors to `workspace_id` always, and optionally to a canonical
+`property_id` / `deal_id`. `forvex_recall` rejects an unresolved address as an anchor exactly as
+`forvex_emit_event` rejects one on emit.
+
 ---
 
 ## 4. MCP topology
