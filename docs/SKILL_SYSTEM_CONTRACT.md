@@ -210,14 +210,21 @@ by pointer, never redefined to diverge.
 | `DocClass` | `contract`, `settlement_statement`, `deed`, `title_commitment`, `rent_roll`, `financial_statement`, `policy`, `process_doc`, `playbook`, `correspondence`, `other` | Same → `DOC_CLASSES` |
 | `DocLifecycle` | `draft`, `executed`, `final`, `superseded` | Same → `DOC_LIFECYCLES` |
 | `CaptureMethod` | `ocr`, `drive`, `conversation`, `human`, `import` | Same → `CAPTURE_METHODS` |
-| `RecallSource` | `document`, `corpus`, `readvise`, `ledger` | `recontrol/lib/mcp/recall/types.ts` → `RECALL_SOURCES` |
+| `RecallSource` | `document`, `corpus`, `insight`, `readvise`, `ledger` | `recontrol/lib/mcp/recall/types.ts` → `RECALL_SOURCES` |
 | `Autonomy` | `MANUAL`, `ASSISTED`, `AUTO` | `recontrol/lib/mcp/readvise/taskDisposition.ts` ↔ `readvise/lib/operate/taskDisposition.ts` |
 | `Disposition` | `propose`, `commit` | Same pair |
 
 **Authority tiers are a ranking, not a label.** `authoritative` is recorded or executed paper;
 `derived` is engine or system output; `asserted` is what somebody said. A consumer must never
 weigh an asserted figure equally against an authoritative one — a conversational "rent is $1,450"
-is not a rent-roll line. `forvex_remember` (Phase 4) writes `asserted` only.
+is not a rent-roll line. `forvex_remember` writes `asserted` only, and `core.insights.authority`
+carries a CHECK that permits nothing else — the rule is in the database, not just the tool.
+
+**Task `source` is load-bearing.** `readvise_tasks.source` decides whether the self-completion
+gate applies: a task an agent created (`ai`) cannot be closed with evidence an agent can mint for
+itself, while a task derived from a document (`document_obligation`) can, because a deadline
+written into a contract is not the agent's own idea. The list lives in the mirrored predicate as
+`AGENT_TASK_SOURCES`; adding a source means deciding which side of that line it falls on.
 
 **Mirror rule.** `Autonomy` and `Disposition` live in a predicate that exists **byte-identically**
 in recontrol and readvise, with each repo asserting the same sha256 of its copy
