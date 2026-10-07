@@ -160,6 +160,27 @@ Values: `LEAD | OFFER | UNDER_CONTRACT | INVENTORY | REHAB | LISTED | PENDING | 
 
 Used by: `forvex_update_deal_disposition`, `forvex_save_deal` (initial status only)
 
+#### 3.4.1 Timeline dates (Operate Timeline)
+
+`forvex_update_deal_disposition` accepts six optional date fields that persist to `readvise_properties`:
+
+| Field | Format | Purpose |
+|-------|--------|---------|
+| `lead_date` | `YYYY-MM-DD` | When the deal entered the pipeline |
+| `contract_date` | `YYYY-MM-DD` | When the contract was signed |
+| `option_expires_at` | `YYYY-MM-DD` | Option period end (deal-at-risk alerts) |
+| `expected_close_date` | `YYYY-MM-DD` | Scheduled closing (deal-at-risk alerts) |
+| `purchase_date` | `YYYY-MM-DD` | Actual acquisition date |
+| `sale_date` | `YYYY-MM-DD` | Actual disposition date |
+
+**Constraints:**
+- Dates are strictly validated (`YYYY-MM-DD` only); invalid formats are rejected.
+- The deal must have a linked `property_id`; without it, dates cannot persist and the call fails.
+- Dates save to `readvise_properties`, surfacing on the Operate Timeline.
+- Response includes `timeline_updated: true` when dates were written.
+
+**Skill procedure:** `forvex-deal-disposition.md` — the shared reference for skills calling this tool.
+
 ### 3.5 Lane event taxonomy (cross-lane ledger)
 
 Two **frozen** enums on `core.lane_events`; the `lane` and `verb` columns are deliberately
@@ -336,6 +357,7 @@ flowchart LR
 |-----------------|------------|---------------|--------|
 | Analysis snapshot | `forvex_save_deal` | `core.deal_analyses.analysis` | Read-only via `forvex_get_deal` |
 | Lifecycle status | `forvex_update_deal_disposition` | `core.deals.current_status` | **`forvex_save_deal` must not change status on re-save** |
+| Timeline dates | `forvex_update_deal_disposition` | `readvise.readvise_properties` (Operate Timeline) | Six optional fields: `lead_date`, `contract_date`, `option_expires_at`, `expected_close_date`, `purchase_date`, `sale_date`. Requires linked `property_id`. See `forvex-deal-disposition.md`. |
 | Franchisee prefs | `forvex_save_buy_box` | `core.franchisee_prefs` | `forvex_get_buy_box` read |
 | Activity / walkaway notes | `forvex_log_activity` | `readvise.readvise_property_notes` | Append-only |
 | Pulse / tasks / advisor | `readvise_create_*`, `readvise_append_pulse_today` | `readvise.*` | Independent of deal analysis |
@@ -361,7 +383,7 @@ flowchart LR
 |-------|------------------|--------|
 | `forvex-onboarding` | "set up my buy-box", "onboard me", "update my preferences" | `forvex_save_buy_box` |
 | `forvex-underwriting` | "analyze", address + price/ARV/rehab, MAO, what-ifs | `forvex_save_deal` (optional) |
-| `forvex-appointment-prep` | "prep me", "meeting at", "appointment brief" | disposition, activity |
+| `forvex-appointment-prep` | "prep me", "meeting at", "appointment brief" | disposition (`forvex-deal-disposition.md`), activity |
 | `forvex-rehab-estimator` | "estimate rehab", walkthrough, component mode | `save_rehab_estimate` (planned) |
 | `readvise-capture` | "note that", "add a task", "pulse:", "advisor lane:", `quick:` | `readvise_*` |
 | `cfo-lane` | KPI / cash / payables / rental capital map | `forvex_emit_event`, `readvise_upsert_rental_debt` |
@@ -473,6 +495,7 @@ pipeline.
 | Document | Relationship |
 |----------|--------------|
 | `reecosystem-core/docs/SKILL_SYSTEM_CONTRACT_discovery.md` | Phase 1 inventory + gap analysis |
+| `reecosystem-core/docs/forvex-deal-disposition.md` | Shared procedure for `forvex_update_deal_disposition` (status + timeline dates) |
 | `forvex-skills/` (repo) | **Canonical skill source + packaging + distribution (§9)** |
 | `forvex-skills/skills/SKILL_REGISTRY.json` | Skill manifest — bundles + per-skill tool wiring |
 | `redeal-mobile/skills/ARCHITECTURE.md` | Legacy vertical-stack notes (skill **source** moved to `forvex-skills`) |
