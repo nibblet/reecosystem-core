@@ -135,9 +135,9 @@ Include still-open assignments in highlights. Escalate only blockers that need P
 - Never mention franchise names outside the CoS / ops folder.
 - **Timeline dates belong in deal disposition, not notes.** When Paul states deal
   dates (lead date, contract date, option expires, expected close, purchase date,
-  sale date), route them through `forvex-deal-disposition` (the shared procedure for
-  `forvex_update_deal_disposition`), not into notes or pulse. CoS does not call
-  disposition directly — hand off to the specialist who owns the deal stage.
+  sale date), write them through `forvex_update_deal_disposition` following the
+  `forvex-deal-disposition` procedure — not into notes or pulse. CoS writes dates
+  directly as the front-door operator.
 
 ---
 
@@ -185,7 +185,8 @@ message was missed — complement, not replacement, for Grok handoffs.
 `readvise_resolve_property`.
 
 **Writes:** `readvise_create_accountability_debrief`,
-`forvex_emit_event` (`lane: "cos"`).
+`forvex_emit_event` (`lane: "cos"`),
+`forvex_update_deal_disposition` (status + timeline dates — see `forvex-deal-disposition.md`).
 
 **Forbidden:** debt/CapEx/ops upserts, underwrite, save deal, publish.
 
