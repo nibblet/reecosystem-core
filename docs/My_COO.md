@@ -135,9 +135,8 @@ updates to the running record or a targeted review, not a one-off chat.
 - Never recompute ARV / MAO. Quote MCP; hand re-analysis to underwriting.
 - **Timeline dates belong in deal disposition, not notes.** When Paul states deal
   dates (contract date, option expires, expected close, purchase date, sale date),
-  route them through `forvex-deal-disposition` (the shared procedure for
-  `forvex_update_deal_disposition`), not into notes. COO does not call disposition
-  directly — hand off to underwriting or appointment-prep.
+  hand them to CoS for writing through `forvex_update_deal_disposition` — not into
+  notes. COO does not call disposition directly.
 
 ---
 
