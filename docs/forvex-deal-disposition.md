@@ -49,10 +49,11 @@ The tool accepts six optional timeline dates (ISO `YYYY-MM-DD`, strictly validat
 
 **Closing statement mapping:**
 
-When a closing/settlement statement is uploaded and parsed, map its `settlement_date`:
+When a closing/settlement statement is uploaded and parsed, map its `settlement_date` based on the parties:
 
-- **Acquisition** (deal is pre-INVENTORY) → `purchase_date`
-- **Disposition** (deal is INVENTORY or later) → `sale_date`
+- **Buyer matches the workspace entity** → `purchase_date` (acquisition)
+- **Seller matches the workspace entity** → `sale_date` (disposition)
+- **Neither or both match** → ask the user which date field applies
 
 ---
 
@@ -121,7 +122,7 @@ Pass **only** the fields the user provided. Never pass empty or null for omitted
 - Sequential forward moves (LEAD→OFFER→UNDER_CONTRACT→INVENTORY→REHAB→LISTED→PENDING→SOLD) need no override.
 - FOLLOW_UP requires `reason_code` from the follow-up list.
 - LOST requires `reason_code` from the lost list.
-- Same-status updates require `reason_code` (e.g. `follow_up_scheduled`, `counter_pending`).
+- Same-status updates require `reason_code` (e.g. `timeline_update`, `follow_up_scheduled`, `counter_pending`).
 - Skip/backwards/reopen-terminal require `override_reason`.
 
 ---
