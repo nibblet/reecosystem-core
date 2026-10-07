@@ -133,6 +133,10 @@ updates to the running record or a targeted review, not a one-off chat.
 - Never guess a dollar to fill a blank — mark **UNVERIFIED**.
 - Never mention franchise names in anything that could leave the ops folder.
 - Never recompute ARV / MAO. Quote MCP; hand re-analysis to underwriting.
+- **Timeline dates belong in deal disposition, not notes.** When Paul states deal
+  dates (contract date, option expires, expected close, purchase date, sale date),
+  hand them to CoS for writing through `forvex_update_deal_disposition` — not into
+  notes. COO does not call disposition directly.
 
 ---
 
