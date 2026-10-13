@@ -20,9 +20,12 @@
 | **readvise** | Downstream **operating surface** · **reference implementation** | The `readvise.*` schema + its API (pipeline, notes, pulse, tasks, advisor workspace). Pure underwriting **parsers** in `lib/operate/utils/` (shared with mobile). | MCP tools (from recontrol); underwriting analysis (not the authority); mirrors `@nibblet/rebuild-engine` in `rebuild_packages/`; mirrors the rebuild `ai-tools` domains. |
 | **rebuild** | Construction / valuation packages | **The pure, portable estimate engine** `@nibblet/rebuild-engine` (`packages/rebuild-engine/`), wire shape versioned by `CONTRACT_VERSION`. The `forvex-build` app (`rebuild3/`) + root `supabase/migrations/`. | Canonical enums/identity from core. Its engine is vendored by recontrol + mirrored by readvise (downstream of its own contract). |
 | **redeal-mobile** | Vertical mobile + Claude skills | Vertical skill workflows (`skills/ARCHITECTURE.md`), per-tool wire schemas (`docs/comps_v2_contract.md`), MCP build sequence. | **MCP tool consumer** (from recontrol). No build-agent team yet. |
+| **forvex-underwrite** | Operator **underwriting app** (Expo / React Native) | Its UI and local display rules only. Live-knob recompute from the vendored `@nibblet/underwrite-engine`, gated by a parity check against the server. | recontrol `/api/operate/*` HTTP routes (not MCP); vendors the underwrite engine (`npm run sync:engine`); buy box, comps, enums from upstream. |
+| **readvise-ios** | Pipeline **iPhone app** (Swift) | Its UI and local display rules only. | The readvise API (`readvise.*` reads and writes); never calls recontrol or MCP; canonical enums mirrored in `Readvise/Domain/Vocabulary.swift`. |
 
 **Mirror chain (top → down):** reecosystem-core → recontrol (MCP + values) /
-rebuild (engine) → readvise + redeal-mobile (consumers).
+rebuild (engine) → readvise + redeal-mobile + forvex-underwrite (consumers of
+recontrol) → readvise-ios (consumer of readvise).
 
 ---
 
@@ -43,6 +46,8 @@ Tools/model are standardized (`AGENT_CONVENTIONS.md` §2–§3): read-only roles
 | **rebuild** | `/Volumes/Lexar/REbuild3/.claude/agents/` | ✅ | ▲ `domain-engineer` | ✅ | ✅ | ✅ | — | Builder is the sanctioned alias **domain-engineer** (pure engine focus). |
 | **reecosystem-core** | `/Volumes/Lexar/reecosystem-core/.claude/` (no `agents/`) | — | — | — | — | — | — | Contracts/orchestration only; no build-agent team today (see §4). |
 | **redeal-mobile** | — | — | — | — | — | — | — | No team yet; MCP consumer (see §4). |
+| **forvex-underwrite** | `forvex-underwrite/.claude/agents/` | — | ▲ `app-builder` | — | — | — | ▲ `contract-keeper` | Builder is **app-builder** (screens, state); **contract-keeper** owns `src/api/**` and the engine integration. |
+| **readvise-ios** | — | — | — | — | — | — | — | No team yet; readvise API consumer. |
 
 Legend: ✅ present · ▲ present under a sanctioned alias · — not present.
 
