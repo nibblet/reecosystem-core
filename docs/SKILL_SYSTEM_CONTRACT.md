@@ -1,7 +1,7 @@
 # REcosystem Skill + MCP Interaction Contract
 
 **Status:** Canonical horizontal contract  
-**Version:** 1.1.0  
+**Version:** 2.0.0  
 **Governs:** Cross-skill identity, source-of-truth, enums, MCP topology, **skill storage & distribution (§9)**, write discipline, routing, and change protocol  
 **Does not govern:** A skill's *internal* workflow prose (`forvex-skills/skills/<name>/SKILL.md`), per-tool wire schemas (`redeal-mobile/docs/comps_v2_contract.md`), or underwriting math internals
 
@@ -96,9 +96,12 @@ core.deal_links(
 | Rent | `forvex_get_rent_estimate` + `forvex_underwrite` merge | rental, BRRRR strategies | `recontrol/lib/mcp/rent/` |
 | Resolved buy-box | `forvex_get_buy_box` injected in `forvex_underwrite` | all analysis skills | `recontrol/lib/mcp/buybox/` |
 | MAO / pre-offer | `forvex_underwrite` | underwriting, appointment-prep | `recontrol/lib/mcp/underwrite/nativeEngine.ts` |
-| Verdict | `forvex_underwrite` | all analysis skills | `recontrol/lib/mcp/underwrite/contracts.ts` (`UnderwriteSummarySchema`) |
-| deal_score (per strategy) | `forvex_underwrite` | one-pager, save snapshot | Same |
-| best_strategy | `forvex_underwrite` | presentation, saves | Same |
+| Underwrite status (`READY` / `VERIFY_ARV`) | `forvex_underwrite` (from the comp decision's confidence; an `arv_override` sets `READY` with `arv_source: operator`) | all analysis skills, Operate, forvex-underwrite, readvise-ios | `recontrol/lib/mcp/underwrite/runUnderwrite.ts`; enum §3.8 |
+| Strategy matrix (per-strategy economics, `fit`, `meets_target`, `shortfalls`, MAO, breakeven) | `forvex_underwrite` | all analysis skills, Operate, both mobile apps | `recontrol/packages/underwrite-engine/src/contracts.ts` |
+| Exit strategy (`exit_strategy` + `exit_strategy_source` / `set_by` / `set_at`) | **The operator**, through `forvex_set_exit_strategy` or the readvise API. **No engine, tool or default picks it**; a buy box with exactly one `primary_exits` entry seeds a new deal (source `buy_box_default`). | Operate, mobile apps, outcomes (`predicted_strategy`), estimate deal-type inference | `readvise.readvise_properties`; §6.2; enum §3.9 |
+| Other monthly expense (`other_monthly` + label) and `utilities_monthly` | Per-deal `forvex_underwrite` input; defaults from the buy box (`other_monthly_default`); persisted in the saved analysis `inputs_echo` | rental / BRRRR expense lines, flip holding costs | `recontrol/lib/mcp/underwrite/runUnderwrite.ts` |
+
+**Removed in 2.0.0:** `verdict` (BUY / NEGOTIATE / PASS), `best_strategy`, `best_deal_score`, per-strategy `deal_score` and the `recommendation_*` envelope are no longer produced. The engine measures every strategy against the operator's buy box; it does not pick one. Consumers may read the fields from analyses saved before 2.0.0 but must not write or display them as a decision.
 | Comps confidence | `forvex_get_comps` (`arv.confidence`) | skill narrative (comps context only) | `recontrol/lib/mcp/comps/trace/compTraceTypes.ts` |
 | Underwriting confidence | `forvex_underwrite` (`confidence`) | one-pager | `UnderwriteSummarySchema` — **distinct from comps confidence** |
 | Market briefing | `forvex_get_market_intelligence` | appointment-prep narrative | `recontrol/lib/mcp/market/` |
@@ -129,6 +132,8 @@ Each enum is listed by **name only**. Values and rates live at the pointer.
 | MCP / server | `recontrol/lib/mcp/buybox/constants.ts` → `FORVEX_STRATEGY_KEYS`, `FORVEX_STRATEGY_LABELS` |
 | Zod | `recontrol/lib/mcp/underwrite/contracts.ts` → `ForvexStrategyKeySchema` |
 | Readvise UI (mirror) | `readvise/lib/types/preferences.ts` → `FORVEX_STRATEGY_*` (must stay in sync manually until shared package exists) |
+
+**Buy-box `primary_exits`:** an ordered subset of the wire keys (one to all six), stored on `core.franchisee_prefs`. Exactly one entry seeds a new deal's `exit_strategy`; several leave it unset and lead the display order. Display order everywhere: operator `exit_strategy`, then `primary_exits` in the operator's order, then the standard order above; excluded rows last.
 
 ### 3.2 Rehab condition tiers (underwriting / quick estimate)
 
@@ -258,6 +263,35 @@ applies to memory too. A document anchors to `workspace_id` always, and optional
 `property_id` / `deal_id`. `forvex_recall` rejects an unresolved address as an anchor exactly as
 `forvex_emit_event` rejects one on emit.
 
+### 3.8 Underwrite status
+
+**Enum name:** `UnderwriteStatus`
+
+Values: `READY | VERIFY_ARV`. `VERIFY_ARV` when the comp decision's confidence is `fail` or `directional_only` is true; an operator `arv_override` yields `READY` with `arv_source: operator`. It is a data-quality gate on the ARV, not a recommendation, and it replaces the retired BUY / NEGOTIATE / PASS verdict.
+
+| Authority | Pointer |
+|-----------|---------|
+| Computed | `recontrol/lib/mcp/underwrite/runUnderwrite.ts` (from `buildArvDataQuality`; the pure engine never sees comps) |
+| Zod | `recontrol/lib/mcp/tools/outputSchemas.ts` |
+| Readvise UI (mirror) | `readvise/lib/operate/utils/financialMetrics.ts` |
+
+### 3.9 Exit strategy source
+
+**Enum name:** `ExitStrategySource`
+
+Values: `operator | claude_confirmed | buy_box_default | legacy_unknown`.
+
+- `operator` — set by a person in Operate, a mobile app, or chat.
+- `claude_confirmed` — proposed by a skill, confirmed by the operator, written through `forvex_set_exit_strategy`.
+- `buy_box_default` — seeded on a new deal from a buy box with exactly one `primary_exits` entry.
+- `legacy_unknown` — a value that existed before provenance was recorded (engine-derived or defaulted). Never treated as a prediction or a decision; outcome capture and estimate deal-type inference ignore it.
+
+| Authority | Pointer |
+|-----------|---------|
+| MCP / server | `recontrol/lib/mcp/deals/` (`forvex_set_exit_strategy` handler) |
+| Column | `readvise.readvise_properties.exit_strategy_source` |
+| Readvise UI (mirror) | `readvise/lib/operate/enumNormalize.ts` |
+
 ---
 
 ## 4. MCP topology
@@ -316,7 +350,8 @@ flowchart LR
   REHAB -->|rehab $ planned| UND
   COMPS --> UND
   UW --> UND
-  UND -->|verdict MAO scores| UW
+  UND -->|status matrix MAO| UW
+  UW -->|set_exit_strategy after operator confirms| CORE
   UW -->|save_deal optional| CORE
   PREP --> UND
   PREP -->|disposition activity| CORE
@@ -334,6 +369,7 @@ flowchart LR
 3. **Underwriting → appointment-prep:** Prep consumes `forvex_underwrite` output; does not call `forvex_save_deal`.
 4. **All → Readvise:** Operational capture via `readvise-capture`; deal analysis persistence via `forvex_save_deal`; activity notes via `forvex_log_activity`.
 5. **Buy-box → all analysis:** Resolved inside `forvex_underwrite`; onboarding writes via `forvex_save_buy_box`.
+6. **Exit strategy:** A skill may propose an exit with reasons (recorded in `session_summary.strategies_discussed`) and writes it through `forvex_set_exit_strategy` only after the operator confirms (source `claude_confirmed`). `forvex_save_deal` never sets it. When `status` is `VERIFY_ARV`, present the matrix with the caveat; do not present any strategy as recommended.
 
 ---
 
@@ -358,7 +394,8 @@ flowchart LR
 | Analysis snapshot | `forvex_save_deal` | `core.deal_analyses.analysis` | Read-only via `forvex_get_deal` |
 | Lifecycle status | `forvex_update_deal_disposition` | `core.deals.current_status` | **`forvex_save_deal` must not change status on re-save** |
 | Timeline dates | `forvex_update_deal_disposition` | `readvise.readvise_properties` (Operate Timeline) | Six optional fields: `lead_date`, `contract_date`, `option_expires_at`, `expected_close_date`, `purchase_date`, `sale_date`. Requires linked `property_id`. See `forvex-deal-disposition.md`. |
-| Franchisee prefs | `forvex_save_buy_box` | `core.franchisee_prefs` | `forvex_get_buy_box` read |
+| Exit strategy | `forvex_set_exit_strategy` (MCP) · readvise API `PATCH /api/operate/properties/[id]` (Operate, readvise-ios) · recontrol `POST /api/operate/deals/[id]/exit` (forvex-underwrite) | `readvise.readvise_properties.exit_strategy` + `exit_strategy_source`, `exit_strategy_set_by`, `exit_strategy_set_at` | **`forvex_save_deal`, re-underwrites, disposition changes, property creation and redeal sync must not set it.** Every writer stamps the three provenance fields. |
+| Franchisee prefs (incl. `primary_exits`, `other_monthly_default`) | `forvex_save_buy_box` | `core.franchisee_prefs` | `forvex_get_buy_box` read |
 | Activity / walkaway notes | `forvex_log_activity` | `readvise.readvise_property_notes` | Append-only |
 | Pulse / tasks / advisor | `readvise_create_*`, `readvise_append_pulse_today` | `readvise.*` | Independent of deal analysis |
 | Holdings rental capital | `readvise_upsert_rental_debt` | `readvise.rental_debt_accounts` / `rental_debt_collateral` / `rental_debt_snapshots` | Snapshots append by as_of_date; collateral replace is explicit |
@@ -395,7 +432,7 @@ flowchart LR
 ### 7.2 Disambiguation order
 
 1. **Explicit prefixes:** `quick:`, `pulse:`, `advisor lane:` → readvise-capture
-2. **Record vs analyze:** Factual logging → capture; numeric verdict → underwriting / prep
+2. **Record vs analyze:** Factual logging → capture; numbers, status, MAO or offer → underwriting / prep
 3. **"Rehab" + walkthrough/estimate** → rehab-estimator (when live); rehab as underwriting input → underwriting
 4. **"Prep" / "meeting" / "seller"** → appointment-prep over underwriting
 5. **"Save" + deal/analysis context** → underwriting (`forvex_save_deal`); "save" + note/task → capture
