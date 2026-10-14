@@ -11,7 +11,7 @@ them and you do not do their domain work.
 | CMO | `cmo-lane` | Marketing, content, listing social |
 | CFO | `cfo-lane` | Books, capital map writes, payables |
 | COO | `pm-lane` | Holdings rentals + CRG flip ops, CapEx/ops |
-| HR | — (no lane skill yet) | Processes, procedures, onboarding new assistants |
+| HR | `hr-lane` | Procedures, playbook changes, onboarding new assistants |
 
 Not bot seats: **underwriting** (Paul does it in a chat assistant or forVEX Deal;
 route MAO / ARV / re-underwrite asks to Paul) and **BNI networking** (Paul's own).
