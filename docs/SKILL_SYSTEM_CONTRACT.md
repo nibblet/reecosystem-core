@@ -13,6 +13,12 @@ This document is a **registry of names, ownership, and pointers**. It prevents h
 
 **Hard rule:** Do not copy authoritative **values** (rates, thresholds, fee schedules, tier $/sqft figures) into this file or into skill prose when MCP is connected. Name the value and point to its server-side definition.
 
+**Connector guidance:** When a skill needs the user to reconnect the MCP, say "reconnect the forVEX Control connector" — do not name a specific client path (e.g. "Claude → Settings → Connectors").
+
+**Data-source attribution:** Property data, comps, flood, and market intel are surfaced through forVEX Control tools (`forvex_get_property`, `forvex_underwrite`, `forvex_get_comps*`, `forvex_get_flood_data`, `forvex_get_market_intelligence`). Skills must not describe data as coming "via RealIE MCP" or any other upstream parcel source — RealIE is an internal upstream behind forVEX, not user-facing.
+
+**No source-code citations as authority:** Skill prose and this contract may reference implementation files for developer orientation, but must never cite source-code paths (e.g. `recontrol/lib/mcp/underwrite/nativeEngine.ts`) as the authoritative source for values or behavior users depend on. The MCP tool outputs are the contract surface.
+
 ---
 
 ## 1. Identity model
@@ -112,6 +118,8 @@ core.deal_links(
 | ChatARV comps (external cross-check) | `forvex_get_chatarv_comps` (read cached / opt-in refresh) → `chatarv-run-comps` edge fn → `core.chatarv_comp_reports` | underwriting ARV cross-check (esp. non-disclosure states), engine-drift tracking | `recontrol/lib/mcp/tools/get_chatarv_comps.ts`; `recontrol/supabase/functions/chatarv-run-comps/index.ts` |
 
 **Offline fallback:** `redeal-mobile/skills/forvex-underwriting/scripts/underwrite.py` may run only when MCP is unreachable. It is **not** a second producer when connected.
+
+**No local-calculator fallback when connected:** When `forvex_underwrite` is unavailable (network error, server down), skills must report that dollar figures are unavailable rather than computing them locally. User-supplied figures in this state must be labelled **UNVERIFIED**. Skills must never embed hardcoded fee schedules, commission rates, holding-cost assumptions, closing constants, or $/sqft tier rates in prose — all such values come from `forvex_underwrite` output and the server buy box (`forvex_get_buy_box`).
 
 **Anti-pattern (explicit):** Passing `include_comps: true` and recomputing ARV in the skill violates `comps_v2_contract.md` design principle.
 
@@ -507,7 +515,7 @@ contract bump (§8.3); adding/removing a tool from the platform registry follows
 
 | Kind | Home | Examples | Distribution |
 |------|------|----------|--------------|
-| **Demo** | forvex-skills (`tier=demo`) | forvex-mao, forvex-rehab-light | uploadable, no account |
+| **Demo** | forvex-skills (`tier=demo`) | forvex-mao | uploadable, no account |
 | **MCP vertical** | forvex-skills (`tier=mcp`) | forvex-underwriting, appointment-prep | uploadable + Control MCP |
 | **Capture / reflect** | forvex-skills (`readvise` bundle) | readvise-capture, weekly-accountability | uploadable + Control MCP |
 | **Cowork lane** | forvex-skills (`cowork` bundle) | cmo-lane | lane references the skill; emits via MCP |
