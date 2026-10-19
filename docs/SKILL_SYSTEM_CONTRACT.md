@@ -1,7 +1,7 @@
 # REcosystem Skill + MCP Interaction Contract
 
 **Status:** Canonical horizontal contract  
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Governs:** Cross-skill identity, source-of-truth, enums, MCP topology, **skill storage & distribution (§9)**, write discipline, routing, and change protocol  
 **Does not govern:** A skill's *internal* workflow prose (`forvex-skills/skills/<name>/SKILL.md`), per-tool wire schemas (`redeal-mobile/docs/comps_v2_contract.md`), or underwriting math internals
 
@@ -299,6 +299,38 @@ Values: `operator | claude_confirmed | buy_box_default | legacy_unknown`.
 | MCP / server | `recontrol/lib/mcp/deals/` (`forvex_set_exit_strategy` handler) |
 | Column | `readvise.readvise_properties.exit_strategy_source` |
 | Readvise UI (mirror) | `readvise/lib/operate/enumNormalize.ts` |
+
+### 3.10 Seller capture (motivation framework)
+
+Added in 2.1.0 (additive). What the operator learns about a seller, captured on a lead or deal, and used to select the conversation play. The play shapes the conversation and the structure of an offer; it never changes or suggests a valuation number (2.0.0: the engine measures, the operator picks). Captured values are hypotheses until outcomes confirm them.
+
+| Enum name | Values |
+|-----------|--------|
+| `MotivationCode` (primary + secondary) | `inherited_estate`, `aging_care`, `relocation_double_carry`, `financial_pressure`, `tired_landlord`, `failed_retail_exit`, `below_basis`, `downsizing`, `court_supervised` (includes divorce), `clearout_burden`, `condition_burden`, `preference_no_pressure`, `other` |
+| `AnchorSource` (each with amount, whose, and one `operative`) | `loan_payoff`, `purchase_price`, `sweat_equity`, `realtor_net_sheet`, `agent_list_opinion`, `payoff_plus_takehome`, `nearby_comp`, `online_estimate`, `none_identified` |
+| `AnchorBehavior` (derived from the operative anchor, never entered) | `fixed`, `fixed_floor`, `tends_to_harden`, `tends_to_decay`, `negotiable`, `unknown` |
+| `ProceedsKind` / `ProceedsVerification` (minimum proceeds: a closing constraint, not a valuation input) | `mortgage_payoff`, `other_lien`, `tax`, `required_net`, `other` / `stated`, `documented`, `title_verified` |
+| `PayableIn` / `TermType` | `dollars`, `terms`, `both`, `unknown` / `possession`, `speed`, `as_is`, `clean_out`, `certainty`, `moving_help`, `discretion` |
+| `Direction` (with an optional deadline date) | `none`, `hardening` |
+| `DecisionStructure` (+ optional influencer) | `sole_owner`, `co_owners`, `estate_multiple_heirs`, `court_supervised`, `authorized_representative` |
+| `LegalSubtype` | `probate_supervised`, `probate_unsupervised`, `guardianship_conservatorship`, `bankruptcy`, `divorce`, `trust`, `other_court_order` |
+| `AuthorityStatus` | `unknown`, `stated`, `documented`, `confirmed` |
+| `FieldState` (per-field evidence) | `draft`, `confirmed`, `corrected`, `unknown` |
+| `OutcomeEndedBy` | `seller`, `competitor`, `operator`, `circumstances`, `unknown` |
+| `OutcomeEndReason` | `price_gap_wont`, `price_gap_cant`, `chose_retail`, `lost_competing_offer`, `terms_unmet`, `title_legal`, `authority_never_obtained`, `kept_property`, `seller_dark`, `pass_margin`, `pass_bandwidth_complexity`, `execution_miss`, `override_positive_analysis` |
+| `OutcomeWinReason` | `terms_delivered`, `speed`, `certainty`, `price`, `trust_relationship`, `other` |
+
+**readvise's motivation dropdown** maps onto `MotivationCode`: Inherited → `inherited_estate`, Divorce → `court_supervised`, Landlord burnout → `tired_landlord`, Relocation → `relocation_double_carry`, Downsizing → `downsizing`, Financial distress → `financial_pressure`, Other → `other`. readvise's mirror adopts the thirteen values when it starts reading captures.
+
+**Sensitive while linked to a seller:** `aging_care`, `court_supervised`, `financial_pressure`, any `LegalSubtype`, minimum proceeds, and the `price_gap_cant` / `authority_never_obtained` outcomes. Shown on the one lead or deal; never in lists, digests, exports or seller-facing text. Only de-identified aggregates leave the system of record.
+
+| Authority | Pointer |
+|-----------|---------|
+| Code lists | `recontrol/lib/motivation/codes.ts` |
+| Zod (wire) | `recontrol/lib/mcp/tools/outputSchemas.ts` → `SellerCaptureShape`, `SellerPlayShape` |
+| MCP / server | `forvex_capture_seller`, `forvex_get_seller_play`; outcome codes on `forvex_record_deal_outcome` |
+| Storage | `core.seller_captures` (append-only); `core.deal_outcomes` (`ended_by`, `end_reason`, `win_reason`) |
+| Plan | `recontrol/docs/MOTIVATION_PLAYBOOK_PLAN.md` |
 
 ---
 
