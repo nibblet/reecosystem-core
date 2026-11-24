@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nibblet/reecosystem-core/main/schemas/forvex.schema.json",
+  "name": "reecosystem-core",
+  "repo": "nibblet/reecosystem-core",
+  "display_name": "forVEX contracts",
+  "default_branch": "main",
+  "tier": "B",
+  "stage": "Live",
+  "version": "",
+  "platform": "docs",
+  "stack": "Markdown + JSON contracts; no build",
+  "hosting": "none",
+  "live_url": "",
+  "custom_domain": "",
+  "sign_in": "none",
+  "supabase": "none",
+  "app_store_status": "not_applicable",
+  "marketing_status": "none",
+  "support_email": "",
+  "owner_bot": "Code Lead",
+  "notes": "Shared contracts and shop standards. Home of the forvex.json schema. Other apps copy contracts in; nothing hosts this repo.",
+  "updated": "2026-11-24"
+}
