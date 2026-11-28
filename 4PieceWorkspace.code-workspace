@@ -1,0 +1,31 @@
+{
+    "folders": [
+		{
+			"path": "../recontrol"
+		},
+		{
+			"path": "../readvise"
+		},
+		{
+			"path": "../REbuild3"
+		},
+		{
+			"path": "../forvex-train"
+		},
+		{
+			"path": "../readvise-ios"
+		},
+		{
+			"path": "../forvex-underwrite"
+		},
+		{
+			"path": "../reScan"
+		},
+		{
+			"path": "../forvex-skills"
+		},
+		{
+			"path": "."
+		}
+	]
+}
