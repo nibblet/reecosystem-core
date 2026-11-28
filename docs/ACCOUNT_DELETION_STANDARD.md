@@ -14,7 +14,7 @@ only calls them.
 ## What a person is offered
 
 Every app that lets people create an account offers deletion inside the app, from Settings
-(App Store guideline 5.1.1(v)). The person gets two choices:
+(App Store guideline 5.1.1(v); layout in [`SETTINGS_STANDARD.md`](./SETTINGS_STANDARD.md)). The person gets two choices:
 
 1. **Delete my `<app>` account.** The app's data is removed. The forVEX sign-in is deleted
    too when nothing else uses it. Otherwise it stays, and the screen says which app keeps it.
