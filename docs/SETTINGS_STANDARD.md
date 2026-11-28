@@ -98,7 +98,8 @@ like. Sizes are iOS points.
   job. Never the same words as the only row under them ("AI features" over a row called "Allow
   AI features", not over "AI features"). Explanations go in the footer, not in a line under the
   header.
-- **Cards.** Core card surface, 20 pt continuous corners, a hairline edge, no shadow. Rows at
+- **Cards.** Core card surface, the Core card radius with continuous corners, a hairline edge, no
+  shadow. Rows at
   least 44 pt tall (50 pt reads better), 16 pt side padding, dividers inset to the text.
 - **Rows.** Navigation: title, optional subtitle, chevron. Value: title and a trailing secondary
   value. Toggle: title, a one-line subtitle on what it powers, the switch tinted with the accent.
